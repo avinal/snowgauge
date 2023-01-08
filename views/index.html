@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<body onload="streamLiveCpuUsage()">
+<div class=" text-center">
+    <div style="padding-top: 20px">
+        <h2 class="text-center">Tor Snowflake stats</h2>
+    </div>
+
+    <div class="row align-items-start">
+        <div class="col">
+            Total Connections: <span id="conn"></span>
+        </div>
+        <div class="col">
+            Total Inbound: <span id="tdown"></span>
+        </div>
+        <div class="col">
+            Total Outbound: <span id="tup"></span>
+        </div>
+        <div class="col">
+            Outbound: <span id="cup"></span>
+        </div>
+        <div class="col">
+            Inbound: <span id="cdown"></span>
+        </div>
+    </div>
+    <div class="row justify-content-md-center align-middle">
+        <div class="col-8">
+            <div id="display"></div>
+        </div>
+
+    </div>
+</div>
+
+
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>-->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script>
+    google.charts.load('current', {packages: ['corechart', 'line']});
+    google.setOnLoadCallback(Initialize);
+
+    var options = {
+
+        hAxis: {
+            title: 'Time',
+            format: 'HH:mm:ss'
+        },
+        vAxis: {
+            title: 'Transfer (Bytes)',
+            minValue: 0
+        },
+        curveType: 'function',
+
+        crosshair: {
+            color: '#000',
+            trigger: 'selection'
+        },
+        dateFormat: 'HH:mm:ss',
+        legend: {
+            position: 'top',
+            alignment: 'center'
+        }
+    };
+
+    function formatBytes(kbytes, decimals) {
+        if (kbytes === 0) return '0 KB';
+        const k = 1000,
+            dm = decimals || 2,
+            sizes = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+            i = Math.floor(Math.log(kbytes) / Math.log(k));
+        return parseFloat((kbytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    function Initialize() {
+        data = new google.visualization.DataTable();
+        data.addColumn('datetime', 'Time');
+        data.addColumn('number', 'Outbound');
+        data.addColumn('number', 'Inbound');
+
+        return data;
+    }
+
+    function streamLiveCpuUsage() {
+
+        if ("WebSocket" in window) {
+            console.log("WebSocket is supported by your Browser!");
+
+            // Let us open a web socket
+            var url = "localhost:8082";
+            console.log(url);
+            var ws = new WebSocket("ws://" + url + "/stream");
+
+            ws.onmessage = function (event) {
+                // console.log(`[message] Data received from server: ${event.data}`);
+
+                curTime = new Date();
+                var curCount = JSON.parse(`${event.data}`);
+                yUpVal = parseInt(curCount.upbytes, 10)
+                yDownVal = parseInt(curCount.downbytes, 10)
+                document.getElementById('conn').innerText = curCount.connections
+                document.getElementById('tdown').innerText = formatBytes(parseInt(curCount.totalDown, 10), 3)
+                document.getElementById('cdown').innerText = formatBytes(yDownVal, 3)
+                document.getElementById('tup').innerText = formatBytes(parseInt(curCount.totalUp, 10), 3)
+                document.getElementById('cup').innerText = formatBytes(yUpVal, 3)
+                data.addRows([[curTime, yUpVal, yDownVal]]);
+                if (data.getNumberOfRows() >= 60) {
+                    data.removeRows(0, 1);
+                }
+
+                var chart = new google.visualization.LineChart(document.getElementById('display'));
+                chart.draw(data, options);
+            };
+
+            ws.onclose = function (event) {
+                if (event.wasClean) {
+                    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+                } else {
+                    // e.g. server process killed or network down
+                    // event.code is usually 1006 in this case
+                    console.log('[close] Connection died');
+                }
+            };
+
+            ws.onerror = function (error) {
+                console.log(`[error] ${error.message}`);
+            };
+
+        } else {
+
+            // The browser doesn't support WebSocket
+            console.log("WebSocket NOT supported by your Browser!");
+        }
+    }
+
+</script>
+</body>
