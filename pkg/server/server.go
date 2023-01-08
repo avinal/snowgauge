@@ -17,7 +17,7 @@ func Init(proxy sf.SnowflakeProxy) {
 		wg.Done()
 	}()
 	go func() {
-		e.Logger.Fatal(e.Start(":8082"))
+		e.Logger.Fatal(e.Start(":9030"))
 		wg.Done()
 	}()
 	wg.Wait()
