@@ -13,7 +13,7 @@ A web UI and monitor for Tor Snowflake
 5. Open [localhost:8082](localhost:8082) in a WebSocket Browser
 
 ## Screenshots
-
+![Snowgauge Web UI](./assets/initialss.png)
 ## References
 
 - [Tor Snowflake proxy](https://community.torproject.org/relay/setup/snowflake/)
