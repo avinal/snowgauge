@@ -56,7 +56,7 @@ func (p *logEventLogger) logTick() error {
 	return nil
 }
 
-func SendStat() (int64, int64, int) {
+func SendStatSum() (int64, int64, int) {
 	inbound, _ := formatTraffic(inChanSum)
 	outbound, _ := formatTraffic(outChanSum)
 	inChanSum = 0

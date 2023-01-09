@@ -48,14 +48,19 @@ func newBytesSyncLogger() *bytesSyncLogger {
 	return b
 }
 
+var curIn int64
+var curOut int64
+
 func (b *bytesSyncLogger) log() {
 	for {
 		select {
 		case amount := <-b.outboundChan:
 			b.outbound += amount
+			curOut += amount
 			b.outEvents++
 		case amount := <-b.inboundChan:
 			b.inbound += amount
+			curIn += amount
 			b.inEvents++
 		}
 	}
@@ -78,7 +83,6 @@ func (b *bytesSyncLogger) ThroughputSummary() string {
 
 	inbound, inUnit := formatTraffic(inbound)
 	outbound, outUnit := formatTraffic(outbound)
-
 	t := time.Now()
 	return fmt.Sprintf("Traffic throughput (up|down): %d %s|%d %s -- (%d OnMessages, %d Sends, over %d seconds)", inbound, inUnit, outbound, outUnit, b.outEvents, b.inEvents, int(t.Sub(b.start).Seconds()))
 }
@@ -88,4 +92,13 @@ func (b *bytesSyncLogger) GetStat() (in int64, out int64) { return b.inbound, b.
 func formatTraffic(amount int64) (value int64, unit string) {
 
 	return amount / 1000, "KB"
+}
+
+func SendCurrent() (int64, int64) {
+	inbound, _ := formatTraffic(curIn)
+	outbound, _ := formatTraffic(curOut)
+	curIn = 0
+	curOut = 0
+
+	return inbound, outbound
 }

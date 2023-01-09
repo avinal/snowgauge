@@ -13,16 +13,16 @@
             Total Connections: <span id="conn"></span>
         </div>
         <div class="col">
-            Total Inbound: <span id="tdown"></span>
+            Total Inbound Traffic: <span id="tdown"></span>
         </div>
         <div class="col">
-            Total Outbound: <span id="tup"></span>
+            Total Outbound Traffic: <span id="tup"></span>
         </div>
         <div class="col">
-            Outbound: <span id="cup"></span>
+            Upload: <span id="cup"></span>
         </div>
         <div class="col">
-            Inbound: <span id="cdown"></span>
+            Download: <span id="cdown"></span>
         </div>
     </div>
     <div class="row justify-content-md-center align-middle">
@@ -91,7 +91,7 @@
             console.log("WebSocket is supported by your Browser!");
 
             // Let us open a web socket
-            var url = "localhost:8082";
+            var url = "localhost:9030";
             console.log(url);
             var ws = new WebSocket("ws://" + url + "/stream");
 

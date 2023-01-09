@@ -20,9 +20,10 @@ func GetValues(ch chan<- Network) error {
 	ticker := time.NewTicker(1 * time.Second)
 	for {
 		<-ticker.C
-		out, in, con := sf.SendStat()
-		totalUp += out
-		totalDown += in
+		tin, tout, con := sf.SendStatSum()
+		in, out := sf.SendCurrent()
+		totalUp += tout
+		totalDown += tin
 		newVal := Network{UploadBytes: out, DownloadBytes: in, TotalUp: totalUp, TotalDown: totalDown, Connections: con}
 		ch <- newVal
 	}
